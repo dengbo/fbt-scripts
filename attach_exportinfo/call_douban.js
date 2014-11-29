@@ -1,31 +1,37 @@
-global.exec_path = '/home/zhangyang/workspace/fbt/fbt_node_client/node_modules';
 var douban = require('./douban.js');
 var fs = require('fs');
 
-/*
-process.on('uncaughtException', function(err) {
+var doneTask = fs.existsSync('out.txt') ? fs.readFileSync('out.txt').toString().split('\n') : [];
+var doneTaskIDs = [];
+doneTask.forEach(function(task) {
+    var id = task.split('\t')[0];
+    doneTaskIDs.push(id);
+});
+var allTask = fs.readFileSync('filenames.csv.2').toString().split('\n');
+var diffTask = [];
+allTask.forEach(function(task) {
+    var id = task.split('\t')[0];
+    if(doneTaskIDs.indexOf(id) < 0) {
+        diffTask.push(task);
+    }
 });
 
-douban.getInfo('南京', function(info) {
-    console.log(info)
-});
-*/
-var lines = fs.readFileSync('filenames.csv.2').toString().split('\n');
 var index = 0;
 setInterval(function(){
-    var line = lines[index];
-    var array = line.split('\t');
+    var task = diffTask[index];
+    var array = task.split('\t');
     var id = array[0];
     var filename = array[1];
+
     douban.getInfo(filename, function(info) {
         if(info) {
-            //line = line + "\t" + JSON.stringify(info);
-            fs.appendFileSync('out.txt', line + "\t" + JSON.stringify(info) + '\n');
+            //task = task + "\t" + JSON.stringify(info);
+            fs.appendFileSync('out.txt', task + "\t" + JSON.stringify(info) + '\n');
         }
         else
         {
-            //line = line + "\t";
-            fs.appendFileSync('out.txt', line + "\t" + '\n');
+            //task = task + "\t";
+            fs.appendFileSync('out.txt', task + "\t" + '\n');
         }
         index++;
     });

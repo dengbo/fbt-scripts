@@ -121,8 +121,11 @@ Fetcher.prototype.fetchAll = function(callback) {
             'http://movie.douban.com/subject/' + this.source;
         console.log(movie_url);
         retry_request(movie_api_url, {dataType: 'json'}, 1, function(info){
+            if(!info) {
+                return callback(null);
+            }
             retry_request(movie_url, {}, 3, function(page) {
-                var $ = cheerio.load(page.toString());
+                var $ = cheerio.load(page ? page.toString(): '');
                 var commentsArray = [];
                 $('div.comment-item > div.comment > p').each(function(i, element){
                     commentsArray[i] = element.children[0].data.trim();
@@ -147,11 +150,15 @@ var getInfo = (function(){
       if (sr) {
         var f = new Fetcher(sr.id);
         f.fetchAll(function (info) {
-          info.rating = sr.rating;
-          info.id = sr.id;
-          info.mlink = sr.mlink;
-          info.ilink = sr.ilink;
-          callback(info);
+          if(info) {
+              info.rating = sr.rating;
+              info.id = sr.id;
+              info.mlink = sr.mlink;
+              info.ilink = sr.ilink;
+              callback(info);
+          } else {
+            callback(null);
+          }
         });
       } else {
         callback(null);
