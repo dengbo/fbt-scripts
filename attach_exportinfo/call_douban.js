@@ -29,4 +29,4 @@ setInterval(function(){
         }
         index++;
     });
-}, 20000);
+}, 15000);

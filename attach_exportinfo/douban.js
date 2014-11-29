@@ -33,8 +33,8 @@ e.g.
 }
  */
 var path = require("path");
-var urllib =  require(path.join(global.exec_path,'urllib'));
-var cheerio = require(path.join(global.exec_path,'cheerio'));
+var urllib =  require('urllib');
+var cheerio = require('cheerio');
 var fs = require('fs');
 var EventEmitter = require('events').EventEmitter;
 
@@ -72,7 +72,7 @@ Searcher.prototype.search = function(cb) {
     retry_request("http://api.douban.com/v2/movie/search", {
         data: {'q': this.query, 'count': 1},
         dataType: 'json'
-    }, 3, function(data) {
+    }, 1, function(data) {
         if (data && data.total) {
             var searchResult = {};
             searchResult.id = data.subjects[0].id;
@@ -120,7 +120,7 @@ Fetcher.prototype.fetchAll = function(callback) {
         var movie_url = this.source_type === 'mlink' ? this.source :
             'http://movie.douban.com/subject/' + this.source;
         console.log(movie_url);
-        retry_request(movie_api_url, {dataType: 'json'}, 3, function(info){
+        retry_request(movie_api_url, {dataType: 'json'}, 1, function(info){
             retry_request(movie_url, {}, 3, function(page) {
                 var $ = cheerio.load(page.toString());
                 var commentsArray = [];

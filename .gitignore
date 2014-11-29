@@ -1,2 +1,7 @@
 *.csv
+*.csv.*
+out.*
 *.pyc
+node_modules
+*.log
+
