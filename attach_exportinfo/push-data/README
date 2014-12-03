@@ -1,0 +1,6 @@
+1. push-db
+ - push_db.py
+
+2. push-image
+ - fetch_ilink.py
+ - wget_img.sh
