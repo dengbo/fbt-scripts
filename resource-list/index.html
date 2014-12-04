@@ -84,7 +84,7 @@
             <a class="cursors"> 举报 </a>
           </div>
           <div style="font-size: 14px;display: inline-block;background:#4edec1;padding: 3px;border-radius: 4px;">
-            <a id="download-me" style="color: white;" class="cursors" data="0" id="download_file_hash2381657189m">
+            <a id="btn-download-me" style="color: white;" class="cursors" data="0" id="download_file_hash2381657189m">
               我要下载
             </a>
           </div>
@@ -116,15 +116,20 @@
               <h5>文件夹下载</h5>
             </div>
           </div>
-          <div class="modal-body" style="padding-bottom: 0;">
+          <div class="modal-body" style="padding-top: 0;">
+            <div class="row" style="border-bottom: 1px solid #E5E5E5; padding: 10px;">
+              <button type="button" class="btn btn-xs" id="btn-select-all" style="background: #4edec1; color: white;">全选</button>
+              <button type="button" class="btn btn-xs" id="btn-toggle-select" style="background: #4edec1; color: white;">反选</button>
+              <button type="button" class="btn btn-xs" id="btn-deselect-all" style="background: #4edec1; color: white;">全不选</button>
+            </div>
             <div class="row">
               <div id="folder-explorer">
               </div>
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-default" id="cancle-download">取消下载</button>
-            <button type="button" class="btn btn-primary" id="download-selected-files">下载(20/27)</button>
+            <button type="button" class="btn btn-default" id="btn-cancel-download">取消下载</button>
+            <button type="button" class="btn btn-primary" id="btn-download-selected-files">下载(20/27)</button>
           </div>
         </div>
       </div>
@@ -139,98 +144,97 @@
     <link href="fancytree/ui.fancytree.css" rel="stylesheet" type="text/css">
 
     <script>
-      // User Interface
-      $('#download-me').click(function() {
+      function buildFolderExplorer(folderExplorer, data) {
+        folderExplorer.fancytree({
+            checkbox: true,
+            autoCollapse: true,
+            autoScroll: true,
+            selectMode: 3,
+            source: data,
+            select: function(event, data) {
+              selectedFiles = $.map(data.tree.getSelectedNodes(), function(node){
+                if(node.folder) return null;
+                var filename = node.title;
+                while(node.parent) {
+                  var parent = node.parent;
+                  filename = parent.title + '/' + filename;
+                  node = parent;
+                }
+                return filename.replace(/^root/, '');
+              });
+              // Download callback
+              $('#btn-download-selected-files').unbind('click').click(function() {
+                $('#folderModal').modal('hide');
+                console.log('Your select: ' + selectedFiles);
+                /*
+                 * selectedFiles is a Array as:
+                 * Array [ "/资料包/英语", "/资料包/英语/四级.rmvb", "/资料包/英语/CET6.mp4" ]
+                 * 
+                 * ############# Write your code here #################
+                 */
+              });
+            }
+        });
+        // select all(default)
+        $('#folder-explorer').fancytree('getTree').visit(function(node){
+          node.setSelected(true);
+        });
+
+      }
+
+      /*
+       * Main entrance
+       */
+      /*
+       * data is a Array. We only use the first item(Array[0]).
+       * 
+       * ############# Write your code here #################
+       */
+      var data = [{
+        title: '资料包', folder: true, expanded: true,
+        children: [
+          {title: '英语', folder: true,
+            children: [
+              {title: '四级.rmvb'},
+              {title: 'CET6.mp4'}
+            ]
+          },
+          {title: '计算机', folder: true,
+            children: [
+              {title: '操作系统.pdf'},
+              {title: '数据结构.txt'}
+            ]
+          }
+        ]
+      }];
+      var selectedFiles;
+      buildFolderExplorer($('#folder-explorer'), data);
+
+      /*
+       * Events
+       */
+      $('#btn-select-all').click(function() {
+          $('#folder-explorer').fancytree('getTree').visit(function(node){
+            node.setSelected(true);
+          });
+      });
+      $('#btn-deselect-all').click(function() {
+          $('#folder-explorer').fancytree('getTree').visit(function(node){
+            node.setSelected(false);
+          });
+      });
+      $('#btn-toggle-select').click(function() {
+          $('#folder-explorer').fancytree('getRootNode').visit(function(node){
+            node.toggleSelected();
+          });
+      });
+
+      // download
+      $('#btn-download-me').click(function() {
         $('#folderModal').modal();
       });
-      $('#download-selected-files').click(function() {
+      $('#btn-cancel-download').click(function() {
         $('#folderModal').modal('hide');
-      });
-      $('#cancle-download').click(function() {
-        $('#folderModal').modal('hide');
-      });
-      
-      // Build directory tree
-      var treeData = [
-      {title: "item1 with key and tooltip", tooltip: "Look, a tool tip!" },
-      {title: "item2: selected on init", selected: true },
-      {title: "Folder", folder: true, key: "id3",
-        children: [
-          {title: "Sub-item 3.1",
-            children: [
-              {title: "Sub-item 3.1.1", key: "id3.1.1" },
-              {title: "Sub-item 3.1.2", key: "id3.1.2" }
-            ]
-          },
-          {title: "Sub-item 3.2",
-            children: [
-              {title: "Sub-item 3.2.1", key: "id3.2.1" },
-              {title: "Sub-item 3.2.2", key: "id3.2.2" }
-            ]
-          }
-        ]
-      },
-      {title: "Document with some children (expanded on init)", key: "id4", expanded: true,
-        children: [
-          {title: "Sub-item 4.1 (active on init)", active: true,
-            children: [
-              {title: "Sub-item 4.1.1", key: "id4.1.1" },
-              {title: "Sub-item 4.1.2", key: "id4.1.2" }
-            ]
-          },
-          {title: "Sub-item 4.2 (selected on init)", selected: true,
-            children: [
-              {title: "Sub-item 4.2.1", key: "id4.2.1" },
-              {title: "Sub-item 4.2.2", key: "id4.2.2" }
-            ]
-          },
-          {title: "Sub-item 4.3 (hideCheckbox)", hideCheckbox: true },
-          {title: "Sub-item 4.4 (unselectable)", unselectable: true }
-        ]
-      },
-      {title: "Lazy folder", folder: true, lazy: true }
-    ];
-    
-    $("#folder-explorer").fancytree({
-  //      extensions: ["select"],
-        checkbox: true,
-        selectMode: 3,
-        source: treeData,
-        lazyLoad: function(event, ctx) {
-          ctx.result = {url: "ajax-sub2.json", debugDelay: 1000};
-        },
-        loadChildren: function(event, ctx) {
-          ctx.node.fixSelection3AfterClick();
-        },
-        select: function(event, data) {
-          // Get a list of all selected nodes, and convert to a key array:
-          var selKeys = $.map(data.tree.getSelectedNodes(), function(node){
-            return node.key;
-          });
-          $("#echoSelection3").text(selKeys.join(", "));
-
-          // Get a list of all selected TOP nodes
-          var selRootNodes = data.tree.getSelectedNodes(true);
-          // ... and convert to a key array:
-          var selRootKeys = $.map(selRootNodes, function(node){
-            return node.key;
-          });
-          $("#echoSelectionRootKeys3").text(selRootKeys.join(", "));
-          $("#echoSelectionRoots3").text(selRootNodes.join(", "));
-        },
-        dblclick: function(event, data) {
-          data.node.toggleSelected();
-        },
-        keydown: function(event, data) {
-          if( event.which === 32 ) {
-            data.node.toggleSelected();
-            return false;
-          }
-        },
-        // The following options are only required, if we have more than one tree on one page:
-  //        initId: "treeData",
-        cookieId: "fancytree-Cb3",
-        idPrefix: "fancytree-Cb3-"
       });
     </script>
   </body>
