@@ -29,6 +29,7 @@ ul.fancytree-container {
   overflow: auto;
   min-height: 0%;
   position: relative;
+  outline: none; /*ZHANGYANG remove border*/
 }
 ul.fancytree-container ul {
   padding: 0 0 0 16px;
