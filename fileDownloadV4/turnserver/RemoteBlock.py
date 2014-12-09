@@ -21,7 +21,7 @@ class RemoteBlock(object):
             raise RemoteBlockException('Need filehash, blockindex, blocksize')
 
         host = self._choose_host()
-        data = self._pull_data(host) if host else None
+        data = self._pull_data(host) if host else ''
         self.data = data
 
     def _pull_data(self, host):

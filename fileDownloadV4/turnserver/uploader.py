@@ -17,11 +17,13 @@ class Index:
     def GET(self):
         i = web.input(filehash=None, blockindex=None, blocksize=None)
         if not (i.filehash and i.blockindex and i.blocksize):
-            return {'error': 'Invalid get arguments'}
+            print 'Invalid get arguments'
+            return ''
 
         filehash = i.filehash
         if filehash not in db:
-            return {'error': 'Cannot find hash: %s' % filehash}
+            print 'Cannot find hash: %s' % filehash
+            return ''
 
         blockindex = int(i.blockindex)
         blocksize = int(i.blocksize)
@@ -32,12 +34,13 @@ class Index:
                 access=mmap.ACCESS_READ)) as m:
                 blocknum = len(m) / blocksize
                 if blockindex <= blocknum:
-                    print blockindex*blocksize, (blockindex+1)*blocksize
+                    print blockindex, blocknum
                     return m[blockindex*blocksize:(blockindex+1)*blocksize]
                 elif blockindex == blocknum + 1 and len(m) % blocksize:
-                    print blockindex*blocksize, 'end'
+                    print blockindex, blocknum
                     return m[blockindex*blocksize:]
                 else:
+                    print 'end'
                     return ''
 
 if __name__ == '__main__':
