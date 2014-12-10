@@ -2,6 +2,7 @@
 
 var http = require('http');
 var randomAccessFile = require('random-access-file');
+var fs = require('fs');
 
 function urlencode(params) {
   var result = [];
@@ -32,6 +33,20 @@ var forwardDownloader = module.exports = function(
   this.source = uploaderUidList.join('|'); //http://1.1.1.1:1111|http://2.2.2.2:2222
   this.downloadOverCallback = downloadOverCallback;
   this.downloadProgressCallback = downloadProgressCallback;
+
+  (function resume(that) {
+    if(fs.existsSync(that.filenametmp)) {
+      var size = fs.statSync(that.filenametmp).size;
+      if(size === that.filesize) {
+        fs.rename(that.filenametmp, that.filename);
+      }
+      else {
+        that.blockindex = Math.floor(size / that.BLOCKSIZE);
+        that.downloadsize = that.blockindex * that.BLOCKSIZE;
+      }
+    }
+    
+  }(this));
 };
 
 forwardDownloader.prototype.startFileDownload = function() {
