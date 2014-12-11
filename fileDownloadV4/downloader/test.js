@@ -35,5 +35,18 @@ function startFileDownloadTest() {
   forwardDownloader.startFileDownload();
 }
 
+function pauseFileDownloadTest() {
+  function sleep(milliSeconds) {
+    var startTime = new Date().getTime();
+    while (new Date().getTime() < startTime + milliSeconds);
+  }
+
+  forwardDownloader.startFileDownload();
+  sleep(5000);
+  forwardDownloader.emit('pause');
+  forwardDownloader.emit('resume');
+}
+
 // Main entrance
-startFileDownloadTest();
+//startFileDownloadTest();
+pauseFileDownloadTest();

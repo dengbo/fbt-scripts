@@ -3,6 +3,7 @@
 var http = require('http');
 var randomAccessFile = require('random-access-file');
 var fs = require('fs');
+var EventEmitter = require('events').EventEmitter;
 
 function urlencode(params) {
   var result = [];
@@ -22,6 +23,14 @@ var forwardDownloader = module.exports = function(
 ) {
   this.BLOCKSIZE = 1024*1024; // 1MB
   this.TURNSERVER = 'http://127.0.0.1:8080/turn?';
+  this.DownloadState = {
+    DOWNLOAD_OVER: 0,
+    DOWNLOADING: 1,
+    CANCELED: 2,
+    PAUSED: 3,
+    DOWNLOAD_ERR: 4,
+    ALREADY_COMPLETE: 5
+  };
 
   this.filename = fileInfo.file_to_save;
   this.filenametmp = this.filename + '.tmp';
@@ -29,6 +38,7 @@ var forwardDownloader = module.exports = function(
   this.filehash = fileInfo.hash;
   this.downloadsize = 0;
   this.blockindex = 0;
+  this.state = null;
   // No need of UidList. I need hosts!
   this.source = uploaderUidList.join('|'); //http://1.1.1.1:1111|http://2.2.2.2:2222
   this.downloadOverCallback = downloadOverCallback;
@@ -56,6 +66,9 @@ var forwardDownloader = module.exports = function(
   }(this));
 };
 
+
+forwardDownloader.prototype.__proto__ = EventEmitter.prototype;
+
 forwardDownloader.prototype.downloadBlock = function() {
   var params = {
     filehash: this.filehash,
@@ -63,6 +76,11 @@ forwardDownloader.prototype.downloadBlock = function() {
     blockindex: this.blockindex,
     blocksize: this.BLOCKSIZE
   };
+
+
+  if(this.state !== this.DownloadState.DOWNLOADING) {
+    return;
+  }
 
   var url = this.TURNSERVER + urlencode(params);
   var that = this;
@@ -83,6 +101,7 @@ forwardDownloader.prototype.downloadBlock = function() {
           return that.downloadBlock();
         }
 
+        this.state = this.DownloadState.DOWNLOAD_OVER;
         return that.downloadOverCallback(that);
       })
       .on('error', function() {
@@ -91,13 +110,34 @@ forwardDownloader.prototype.downloadBlock = function() {
   });
 };
 
-// Exports functions
 forwardDownloader.prototype.startFileDownload = function() {
+  this.state = this.DownloadState.DOWNLOADING;
   this.downloadBlock();
 };
 
-// TODO
-//forwardDownloader.prototype.pauseFileDownload = function() {};
-//forwardDownloader.prototype.resumeFileDownload = function() {};
-//forwardDownloader.prototype.cancelFileDownload = function() {};
+forwardDownloader.prototype.pauseFileDownload = function() {
+  this.state = this.DownloadState.PAUSED;
+};
 
+forwardDownloader.prototype.resumeFileDownload = function() {
+  this.state = this.DownloadState.DOWNLOADING;
+};
+
+forwardDownloader.prototype.cancelFileDownload = function() {
+  this.state = this.DownloadState.CANCELED;
+};
+
+forwardDownloader.prototype.on('pause', function() {
+  console.log('pause');
+  this.pauseFileDownload();
+});
+
+forwardDownloader.prototype.on('resume', function() {
+  console.log('resume');
+  this.resumeFileDownload();
+});
+
+forwardDownloader.prototype.on('cancel', function() {
+  console.log('cancel');
+  this.cancelFileDownload();
+});
