@@ -34,7 +34,7 @@ var forwardDownloader = module.exports = function(
   this.downloadOverCallback = downloadOverCallback;
   this.downloadProgressCallback = downloadProgressCallback;
 
-  (function resume(that) {
+  (function recovery(that) {
     if(fs.existsSync(that.filenametmp)) {
       var size = fs.statSync(that.filenametmp).size;
       if(size === that.filesize) {
@@ -45,12 +45,15 @@ var forwardDownloader = module.exports = function(
         that.downloadsize = that.blockindex * that.BLOCKSIZE;
       }
     }
+    else if(fs.existsSync(that.filename)) {
+      var size = fs.statSync(that.filename).size;
+      if(size == that.filesize) {
+        that.blockindex = Math.floor(size / that.BLOCKSIZE);
+        that.downloadsize = that.blockindex * that.BLOCKSIZE;
+      }
+    }
     
   }(this));
-};
-
-forwardDownloader.prototype.startFileDownload = function() {
-  this.downloadBlock();
 };
 
 forwardDownloader.prototype.downloadBlock = function() {
@@ -87,3 +90,9 @@ forwardDownloader.prototype.downloadBlock = function() {
       });
   });
 };
+
+// Exports functions
+forwardDownloader.prototype.startFileDownload = function() {
+  this.downloadBlock();
+};
+

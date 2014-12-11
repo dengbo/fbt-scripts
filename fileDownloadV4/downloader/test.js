@@ -13,6 +13,9 @@ var uploaderUidList = ['http://182.92.212.237:8081', 'http://182.92.212.237:8080
 var e = null;
 var downloadOverCallback = function(that) {
   fs.rename(that.filenametmp, that.filename);
+
+  ENDTIME = new Date().getTime();
+  console.log('Used ' + (ENDTIME-STARTTIME/1000.0) + ' seconds');
 };
 var downloadProgressCallback = function(that) {
   console.log(that.downloadsize / that.filesize);
@@ -25,6 +28,8 @@ forwardDownloader = new forwardDownloader(
 
 function startFileDownloadTest() {
   console.log('startFileDownloadTest...');
+  STARTTIME = new Date().getTime();
+
   forwardDownloader.startFileDownload();
 }
 
