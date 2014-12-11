@@ -12,10 +12,12 @@ var my_uid = null;
 var uploaderUidList = ['http://182.92.212.237:8081', 'http://182.92.212.237:8080'];
 var e = null;
 var downloadOverCallback = function(that) {
-  fs.rename(that.filenametmp, that.filename);
+  if(fs.existsSync(that.filenametmp)) {
+    fs.rename(that.filenametmp, that.filename);
+  }
 
   ENDTIME = new Date().getTime();
-  console.log('Used ' + (ENDTIME-STARTTIME/1000.0) + ' seconds');
+  console.log('Used ' + (ENDTIME-STARTTIME)/1000 + ' seconds');
 };
 var downloadProgressCallback = function(that) {
   console.log(that.downloadsize / that.filesize);

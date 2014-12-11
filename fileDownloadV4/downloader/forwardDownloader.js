@@ -35,19 +35,19 @@ var forwardDownloader = module.exports = function(
   this.downloadProgressCallback = downloadProgressCallback;
 
   (function recovery(that) {
-    if(fs.existsSync(that.filenametmp)) {
+    if(fs.existsSync(that.filename)) {
+      var size = fs.statSync(that.filename).size;
+      if(size == that.filesize) {
+        that.blockindex = Math.ceil(size / that.BLOCKSIZE);
+        that.downloadsize = size;
+      }
+    }
+    else if(fs.existsSync(that.filenametmp)) {
       var size = fs.statSync(that.filenametmp).size;
       if(size === that.filesize) {
         fs.rename(that.filenametmp, that.filename);
       }
       else {
-        that.blockindex = Math.floor(size / that.BLOCKSIZE);
-        that.downloadsize = that.blockindex * that.BLOCKSIZE;
-      }
-    }
-    else if(fs.existsSync(that.filename)) {
-      var size = fs.statSync(that.filename).size;
-      if(size == that.filesize) {
         that.blockindex = Math.floor(size / that.BLOCKSIZE);
         that.downloadsize = that.blockindex * that.BLOCKSIZE;
       }
@@ -95,4 +95,9 @@ forwardDownloader.prototype.downloadBlock = function() {
 forwardDownloader.prototype.startFileDownload = function() {
   this.downloadBlock();
 };
+
+// TODO
+//forwardDownloader.prototype.pauseFileDownload = function() {};
+//forwardDownloader.prototype.resumeFileDownload = function() {};
+//forwardDownloader.prototype.cancelFileDownload = function() {};
 
