@@ -28,10 +28,11 @@ forwardDownloader = new forwardDownloader(
   fileInfo, my_uid, uploaderUidList, e, downloadOverCallback, downloadProgressCallback
 );
 
+/*
+ * Tests
+ */
 function startFileDownloadTest() {
   console.log('startFileDownloadTest...');
-  STARTTIME = new Date().getTime();
-
   forwardDownloader.startFileDownload();
 }
 
@@ -43,10 +44,40 @@ function pauseFileDownloadTest() {
 
   forwardDownloader.startFileDownload();
   sleep(5000);
+  console.log('Pausing...');
   forwardDownloader.emit('pause');
+}
+
+function resumeFileDownloadTest() {
+  function sleep(milliSeconds) {
+    var startTime = new Date().getTime();
+    while (new Date().getTime() < startTime + milliSeconds);
+  }
+
+  forwardDownloader.startFileDownload();
+  sleep(5000);
+  console.log('Pausing...');
+  forwardDownloader.emit('pause');
+  sleep(10);
+  console.log('Resuming...');
+  forwardDownloader.emit('resume');
+  sleep(10000);
+  console.log('Pausing...');
+  forwardDownloader.emit('pause');
+  sleep(2000);
+  console.log('Resuming...');
   forwardDownloader.emit('resume');
 }
 
-// Main entrance
+function cancelFileDownloadTest() {
+  forwardDownloader.cancelFileDownload();
+}
+
+/*
+ * Main entrance
+ */
+STARTTIME = new Date().getTime();
 //startFileDownloadTest();
-pauseFileDownloadTest();
+//pauseFileDownloadTest();
+resumeFileDownloadTest();
+//cancelFileDownloadTest();

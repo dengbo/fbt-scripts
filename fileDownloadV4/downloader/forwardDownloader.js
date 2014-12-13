@@ -69,7 +69,17 @@ var forwardDownloader = module.exports = function(
 
 forwardDownloader.prototype.__proto__ = EventEmitter.prototype;
 
+forwardDownloader.prototype.isInterrupted = function() {
+  if(this.state !== this.DownloadState.DOWNLOADING) {
+    return true;
+  }
+  return false;
+};
 forwardDownloader.prototype.downloadBlock = function() {
+  if(this.isInterrupted()) {
+    return;
+  }
+
   var params = {
     filehash: this.filehash,
     source: this.source,
@@ -77,14 +87,9 @@ forwardDownloader.prototype.downloadBlock = function() {
     blocksize: this.BLOCKSIZE
   };
 
-
-  if(this.state !== this.DownloadState.DOWNLOADING) {
-    return;
-  }
-
   var url = this.TURNSERVER + urlencode(params);
   var that = this;
-  http.get(url, function(response) {
+  var request = http.get(url, function(response) {
       response.setEncoding('binary'); 
 
       var block = [];
@@ -101,13 +106,22 @@ forwardDownloader.prototype.downloadBlock = function() {
           return that.downloadBlock();
         }
 
-        this.state = this.DownloadState.DOWNLOAD_OVER;
+        that.state = that.DownloadState.DOWNLOAD_OVER;
         return that.downloadOverCallback(that);
       })
-      .on('error', function() {
-        // TODO
+      .on('error', function(error) {
+        console.log('Response error: ' + error);
       });
+  })
+  .on('error', function(error) {
+    console.log('Request error: ' + error);
+  })
+  .on('socket', function() {
+    if(that.isInterrupted()) {
+      request.abort();
+    }
   });
+  request.end();
 };
 
 forwardDownloader.prototype.startFileDownload = function() {
@@ -125,19 +139,24 @@ forwardDownloader.prototype.resumeFileDownload = function() {
 
 forwardDownloader.prototype.cancelFileDownload = function() {
   this.state = this.DownloadState.CANCELED;
+  if(fs.existsSync(this.filename)) {
+    fs.unlinkSync(this.filename);
+    console.log('Deleted ' + this.filename);
+  }
+  else if(fs.existsSync(this.filenametmp)) {
+    fs.unlinkSync(this.filenametmp);
+    console.log('Deleted ' + this.filenametmp);
+  }
 };
 
 forwardDownloader.prototype.on('pause', function() {
-  console.log('pause');
   this.pauseFileDownload();
 });
 
 forwardDownloader.prototype.on('resume', function() {
-  console.log('resume');
   this.resumeFileDownload();
 });
 
 forwardDownloader.prototype.on('cancel', function() {
-  console.log('cancel');
   this.cancelFileDownload();
 });
