@@ -1,6 +1,7 @@
 /* vim: set expandtab sw=2 ts=2 : */
 
 $(function() {
+  // buildFolderExplorer START
   function buildFolderExplorer(folderExplorer, treeData) {
     folderExplorer.fancytree({
         checkbox: true,
@@ -45,7 +46,8 @@ $(function() {
     });
 
   }
-
+  // buildFolderExplorer END
+  
   /*
    * Main entrance
    */
@@ -88,7 +90,20 @@ $(function() {
   buildFolderExplorer($('#folder-explorer'), data);
 
   /*
-   * Events
+   * Change Tab(Not necessary)
+   */
+  $('#tab1').click(function() {
+    $('#container_resources').show();
+    $('#container_download_resources').hide();
+  });
+  $('#tab2').click(function() {
+    $('#container_download_resources').show();
+    $('#container_resources').hide();
+  });
+  $('#tab1').click();
+
+  /*
+   * Folder Events
    */
   $('#btn-select-all').click(function() {
       $('#folder-explorer').fancytree('getTree').visit(function(node){
